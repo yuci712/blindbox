@@ -1,12 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = require("path");
-const user_entity_1 = require("../entity/user.entity");
-const blindbox_entity_1 = require("../entity/blindbox.entity");
-const order_entity_1 = require("../entity/order.entity");
-const user_blindbox_entity_1 = require("../entity/user-blindbox.entity");
-const comment_entity_1 = require("../entity/comment.entity");
-const player_show_entity_1 = require("../entity/player-show.entity");
 exports.default = {
     // use for cookie sign key, should change to your own and keep security
     keys: '1754157449291_8973',
@@ -31,7 +25,14 @@ exports.default = {
                 database: (0, path_1.join)(__dirname, '../../database.sqlite'),
                 synchronize: true,
                 logging: ['error'],
-                entities: [user_entity_1.User, blindbox_entity_1.BlindBox, order_entity_1.Order, user_blindbox_entity_1.UserBlindBox, comment_entity_1.Comment, player_show_entity_1.PlayerShow], // 直接引用实体类
+                entities: [
+                    require("../entity/user.entity").User,
+                    require("../entity/blindbox.entity").BlindBox,
+                    require("../entity/order.entity").Order,
+                    require("../entity/user-blindbox.entity").UserBlindBox,
+                    require("../entity/comment.entity").Comment,
+                    require("../entity/player-show.entity").PlayerShow
+                ], // 直接导入实体类
             },
         },
     },
