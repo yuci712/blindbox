@@ -93,3 +93,32 @@ temp/
 
 # DynamoDB Local files
 .dynamodb/
+
+# Test files and development files (exclude from repository)
+*test*.html
+*debug*.html
+*test*.js
+*admin-*.html
+*gradient*.html
+*collection*.html
+*player-show*.html
+*simple*.html
+*beautiful*.html
+*fix*.html
+*inactive*.html
+*complete*.html
+*.bat
+cleanup-repo.bat
+update-images.js
+
+# Documentation files (keep only essential ones)
+大作业*.md
+功能录屏*.md
+录屏*.md
+GitHub代码*.md
+项目演示*.md
+演示*.md
+单文件构建*.md
+最终提交*.md
+提交检查*.md
+react-devtools-fix.md

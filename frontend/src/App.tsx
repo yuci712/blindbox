@@ -16,7 +16,6 @@ import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Admin from './pages/Admin';
 import AdminOrders from './pages/AdminOrders';
-import GradientTest from './pages/GradientTest';
 import './App.css';
 
 interface User {
@@ -86,7 +85,6 @@ const AppContent = () => {
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/admin/blindboxes" element={<AdminRoute><Admin /></AdminRoute>} />
           <Route path="/admin/orders" element={<AdminRoute><AdminOrders /></AdminRoute>} />
-          <Route path="/gradient-test" element={<GradientTest />} />
         </Routes>
       </main>
     </div>
