@@ -33,8 +33,9 @@ if not exist "spa-server.js" (
     echo const http = require('http'^); > spa-server.js
     echo const fs = require('fs'^); >> spa-server.js
     echo const path = require('path'^); >> spa-server.js
+    echo const url = require('url'^); >> spa-server.js
     echo. >> spa-server.js
-    echo const port = 8080; >> spa-server.js
+    echo const PORT = 8080; >> spa-server.js
     echo const mimeTypes = { >> spa-server.js
     echo   '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', >> spa-server.js
     echo   '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpg', >> spa-server.js
@@ -43,35 +44,57 @@ if not exist "spa-server.js" (
     echo }; >> spa-server.js
     echo. >> spa-server.js
     echo const server = http.createServer((req, res^) =^> { >> spa-server.js
-    echo   let filePath = '.' + req.url; >> spa-server.js
-    echo   if (filePath === './'^) filePath = './index.html'; >> spa-server.js
-    echo   if (!fs.existsSync(filePath^) ^&^& !req.url.startsWith('/api'^)^) { >> spa-server.js
-    echo     filePath = './index.html'; >> spa-server.js
+    echo   const parsedUrl = url.parse(req.url^); >> spa-server.js
+    echo   let pathname = '.' + parsedUrl.pathname; >> spa-server.js
+    echo   console.log(`请求: ${req.method} ${req.url}`^); >> spa-server.js
+    echo   if (pathname === './'^) pathname = './index.html'; >> spa-server.js
+    echo. >> spa-server.js
+    echo   // API代理 >> spa-server.js
+    echo   if (req.url.startsWith('/api/'^)^) { >> spa-server.js
+    echo     const proxyReq = http.request({ >> spa-server.js
+    echo       hostname: 'localhost', port: 7001, path: req.url, >> spa-server.js
+    echo       method: req.method, headers: req.headers >> spa-server.js
+    echo     }, (proxyRes^) =^> { >> spa-server.js
+    echo       res.writeHead(proxyRes.statusCode, proxyRes.headers^); >> spa-server.js
+    echo       proxyRes.pipe(res^); >> spa-server.js
+    echo     }^); >> spa-server.js
+    echo     proxyReq.on('error', (err^) =^> { >> spa-server.js
+    echo       res.writeHead(500^); res.end('API服务不可用'^); >> spa-server.js
+    echo     }^); >> spa-server.js
+    echo     req.pipe(proxyReq^); return; >> spa-server.js
     echo   } >> spa-server.js
-    echo   const extname = String(path.extname(filePath^)^).toLowerCase(^); >> spa-server.js
-    echo   const contentType = mimeTypes[extname] ^|^| 'application/octet-stream'; >> spa-server.js
-    echo   fs.readFile(filePath, (error, content^) =^> { >> spa-server.js
-    echo     if (error^) { >> spa-server.js
-    echo       if (error.code === 'ENOENT'^) { >> spa-server.js
-    echo         res.writeHead(404, { 'Content-Type': 'text/html' }^); >> spa-server.js
-    echo         res.end('^<h1^>404 Not Found^</h1^>', 'utf-8'^); >> spa-server.js
-    echo       } else { >> spa-server.js
-    echo         res.writeHead(500^); >> spa-server.js
-    echo         res.end('服务器错误: ' + error.code^); >> spa-server.js
-    echo       } >> spa-server.js
-    echo     } else { >> spa-server.js
-    echo       res.writeHead(200, { >> spa-server.js
-    echo         'Content-Type': contentType, >> spa-server.js
-    echo         'Access-Control-Allow-Origin': '*', >> spa-server.js
-    echo         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE', >> spa-server.js
-    echo         'Access-Control-Allow-Headers': 'Content-Type, Authorization' >> spa-server.js
+    echo. >> spa-server.js
+    echo   // 文件服务 >> spa-server.js
+    echo   if (fs.existsSync(pathname^)^) { >> spa-server.js
+    echo     const ext = path.parse(pathname^).ext; >> spa-server.js
+    echo     const contentType = mimeTypes[ext] ^|^| 'text/plain'; >> spa-server.js
+    echo     res.setHeader('Content-type', contentType^); >> spa-server.js
+    echo     res.setHeader('Access-Control-Allow-Origin', '*'^); >> spa-server.js
+    echo     fs.readFile(pathname, (err, data^) =^> { >> spa-server.js
+    echo       if (err^) { res.writeHead(500^); res.end('读取错误'^); } >> spa-server.js
+    echo       else { res.end(data^); } >> spa-server.js
+    echo     }^); >> spa-server.js
+    echo   } else { >> spa-server.js
+    echo     // SPA路由fallback >> spa-server.js
+    echo     const ext = path.parse(pathname^).ext; >> spa-server.js
+    echo     if (!ext ^|^| ext === '.html'^) { >> spa-server.js
+    echo       console.log(`SPA路由: ${req.url} -^> index.html`^); >> spa-server.js
+    echo       res.setHeader('Content-type', 'text/html'^); >> spa-server.js
+    echo       res.setHeader('Access-Control-Allow-Origin', '*'^); >> spa-server.js
+    echo       fs.readFile('./index.html', (err, data^) =^> { >> spa-server.js
+    echo         if (err^) { res.writeHead(404^); res.end('Page not found'^); } >> spa-server.js
+    echo         else { res.end(data^); } >> spa-server.js
     echo       }^); >> spa-server.js
-    echo       res.end(content, 'utf-8'^); >> spa-server.js
+    echo     } else { >> spa-server.js
+    echo       res.writeHead(404^); res.end('File not found'^); >> spa-server.js
     echo     } >> spa-server.js
-    echo   }^); >> spa-server.js
+    echo   } >> spa-server.js
     echo }^); >> spa-server.js
     echo. >> spa-server.js
-    echo server.listen(port, (^) =^> console.log(`前端服务器运行在 http://localhost:${port}`^)^); >> spa-server.js
+    echo server.listen(PORT, (^) =^> { >> spa-server.js
+    echo   console.log(`前端服务器: http://localhost:${PORT}`^); >> spa-server.js
+    echo   console.log('支持SPA路由，API代理到 :7001'^); >> spa-server.js
+    echo }^); >> spa-server.js
 )
 
 echo    启动SPA服务器...
