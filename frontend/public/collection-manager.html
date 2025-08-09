@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>收藏数据管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .warning {
+            background: #fef3cd;
+            border: 1px solid #f6e05e;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 30px;
+            color: #d69e2e;
+            font-weight: 500;
+        }
+        
+        .danger-warning {
+            background: #fed7d7;
+            border: 1px solid #fc8181;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 30px;
+            color: #c53030;
+            font-weight: 500;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565, #c53030);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(245, 101, 101, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(72, 187, 120, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        
+        .result.success {
+            background: #f0fff4;
+            border: 1px solid #9ae6b4;
+            color: #38a169;
+        }
+        
+        .result.error {
+            background: #fed7d7;
+            border: 1px solid #fc8181;
+            color: #c53030;
+        }
+        
+        .result.info {
+            background: #ebf8ff;
+            border: 1px solid #90cdf4;
+            color: #3182ce;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗂️ 收藏数据管理</h1>
+        <p class="subtitle">管理用户收藏数据</p>
+        
+        <div class="warning">
+            ⚠️ 注意：此工具仅限管理员使用，请谨慎操作！
+        </div>
+        
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="checkCollectionStats()">
+                📊 查看收藏统计
+            </button>
+            
+            <button class="btn btn-success" onclick="exportCollections()">
+                💾 导出收藏数据
+            </button>
+        </div>
+        
+        <div class="danger-warning">
+            🚨 危险操作区域：以下操作将永久删除数据，无法恢复！
+        </div>
+        
+        <div class="button-group">
+            <button class="btn btn-danger" onclick="clearAllCollections()">
+                🗑️ 清空所有收藏数据
+            </button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let isLoading = false;
+
+        function setLoading(loading) {
+            isLoading = loading;
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(btn => {
+                btn.disabled = loading;
+                if (loading) {
+                    const originalText = btn.textContent;
+                    btn.dataset.originalText = originalText;
+                    btn.innerHTML = '<div class="loading"></div> 处理中...';
+                } else if (btn.dataset.originalText) {
+                    btn.textContent = btn.dataset.originalText;
+                }
+            });
+        }
+
+        function showResult(content, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = content;
+            resultDiv.className = `result ${type}`;
+        }
+
+        async function checkCollectionStats() {
+            setLoading(true);
+            showResult('正在获取收藏统计数据...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showResult('❌ 错误：未找到管理员令牌，请先登录管理员账户', 'error');
+                    return;
+                }
+                
+                // 获取收藏统计
+                const response = await fetch('http://127.0.0.1:7001/api/admin/dashboard-stats', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 这里需要根据实际的数据结构调整
+                    showResult(`
+                        <h3>📊 收藏数据统计</h3>
+                        <div class="stats">
+                            <div class="stat-card">
+                                <div class="stat-number">-</div>
+                                <div class="stat-label">总收藏数</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">-</div>
+                                <div class="stat-label">活跃用户</div>
+                            </div>
+                        </div>
+                        <p>💡 提示：如需详细统计，请联系开发者添加相关API接口</p>
+                    `, 'success');
+                } else {
+                    showResult(`❌ 获取统计失败：${result.message}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ 请求失败：${error.message}`, 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function exportCollections() {
+            showResult('💡 导出功能开发中，敬请期待...', 'info');
+        }
+
+        async function clearAllCollections() {
+            // 多重确认
+            if (!confirm('⚠️ 警告：此操作将清空所有用户的收藏数据！\n\n这个操作是不可逆的，确定要继续吗？')) {
+                return;
+            }
+            
+            if (!confirm('🚨 最后确认：您真的要删除所有用户收藏数据吗？\n\n请输入"确认删除"来继续：')) {
+                return;
+            }
+            
+            const confirmText = prompt('请输入"确认删除"来继续操作：');
+            if (confirmText !== '确认删除') {
+                showResult('❌ 操作已取消：确认文本不匹配', 'error');
+                return;
+            }
+            
+            setLoading(true);
+            showResult('🗑️ 正在清空收藏数据...', 'info');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showResult('❌ 错误：未找到管理员令牌，请先登录管理员账户', 'error');
+                    return;
+                }
+                
+                const response = await fetch('http://127.0.0.1:7001/api/admin/clear-collections', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult(`
+                        <h3>✅ 清空完成！</h3>
+                        <div class="stats">
+                            <div class="stat-card">
+                                <div class="stat-number">${result.data.deletedCount}</div>
+                                <div class="stat-label">已删除记录数</div>
+                            </div>
+                        </div>
+                        <p><strong>操作结果：</strong>${result.data.message}</p>
+                        <p>🎉 所有用户收藏数据已清空，可以重新开始收集了！</p>
+                    `, 'success');
+                } else {
+                    showResult(`❌ 清空失败：${result.message}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ 请求失败：${error.message}`, 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // 页面加载时检查登录状态
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (!token || !user) {
+                showResult('⚠️ 请先登录管理员账户才能使用此工具', 'error');
+                return;
+            }
+            
+            try {
+                const userData = JSON.parse(user);
+                if (userData.role !== 'admin') {
+                    showResult('❌ 权限不足：此工具仅限管理员使用', 'error');
+                    return;
+                }
+                
+                showResult(`👋 欢迎，${userData.username} 管理员！`, 'success');
+            } catch (error) {
+                showResult('❌ 用户数据解析失败，请重新登录', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

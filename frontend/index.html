@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>盲盒抽盒机</title>
+    <script>
+      // 禁用 React DevTools 提示
+      if (typeof window !== 'undefined') {
+        window.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
+          isDisabled: true,
+          supportsFiber: true,
+          inject: function() {},
+          onCommitFiberRoot: function() {},
+          onCommitFiberUnmount: function() {},
+        };
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

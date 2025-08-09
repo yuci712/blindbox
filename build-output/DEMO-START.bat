@@ -1,0 +1,3 @@
+@echo off
+echo 🎮 启动演示环境...
+call start.bat

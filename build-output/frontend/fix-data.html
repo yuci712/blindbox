@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>数据修复工具</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; }
+        .result { margin: 20px 0; padding: 10px; background: #f0f0f0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>盲盒数据修复工具</h1>
+    <p>这个工具可以修复数据库中错误的概率数据（将大于1的概率值除以100）</p>
+    
+    <button onclick="fixProbabilityData()">修复概率数据</button>
+    <button onclick="checkData()">检查当前数据</button>
+    <button onclick="clearAllCollections()" style="background-color: #dc2626; color: white;">清空所有收藏数据</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function fixProbabilityData() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '正在修复数据...';
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    resultDiv.innerHTML = '<div style="color: red;">错误：未找到管理员令牌，请先登录</div>';
+                    return;
+                }
+                
+                const response = await fetch('http://127.0.0.1:7001/api/admin/fix-probability-data', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result" style="color: green;">
+                            <h3>修复完成！</h3>
+                            <p>总计盲盒数：${result.data.totalBoxes}</p>
+                            <p>修复的盲盒数：${result.data.fixedCount}</p>
+                            ${result.data.fixedBoxes.length > 0 ? 
+                                '<p>修复的盲盒：' + result.data.fixedBoxes.join(', ') + '</p>' : 
+                                '<p>没有需要修复的数据</p>'
+                            }
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div style="color: red;">错误：${result.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div style="color: red;">请求失败：${error.message}</div>`;
+            }
+        }
+
+        async function checkData() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '正在检查数据...';
+            
+            try {
+                const response = await fetch('http://127.0.0.1:7001/api/blindboxes');
+                const result = await response.json();
+                
+                if (result.success) {
+                    let problemBoxes = [];
+                    
+                    result.data.items.forEach(box => {
+                        box.items.forEach(item => {
+                            if (item.probability >= 1) {
+                                problemBoxes.push({
+                                    boxName: box.name,
+                                    itemName: item.name,
+                                    probability: item.probability
+                                });
+                            }
+                        });
+                    });
+                    
+                    if (problemBoxes.length > 0) {
+                        let problemHtml = '<div class="result" style="color: orange;"><h3>发现问题数据：</h3><ul>';
+                        problemBoxes.forEach(problem => {
+                            problemHtml += `<li>${problem.boxName} - ${problem.itemName}: 概率 ${problem.probability} (应该是 ${problem.probability / 100})</li>`;
+                        });
+                        problemHtml += '</ul></div>';
+                        resultDiv.innerHTML = problemHtml;
+                    } else {
+                        resultDiv.innerHTML = '<div class="result" style="color: green;"><h3>数据正常！</h3><p>没有发现概率大于等于1的数据</p></div>';
+                    }
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div style="color: red;">检查失败：${error.message}</div>`;
+            }
+        }
+
+        async function clearAllCollections() {
+            const resultDiv = document.getElementById('result');
+            
+            // 确认操作
+            if (!confirm('⚠️ 警告：此操作将清空所有用户的收藏数据，且无法恢复！\n\n确定要继续吗？')) {
+                return;
+            }
+            
+            if (!confirm('请再次确认：您确定要清空所有用户收藏数据吗？这个操作不可逆转！')) {
+                return;
+            }
+            
+            resultDiv.innerHTML = '正在清空收藏数据...';
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    resultDiv.innerHTML = '<div style="color: red;">错误：未找到管理员令牌，请先登录</div>';
+                    return;
+                }
+                
+                const response = await fetch('http://127.0.0.1:7001/api/admin/clear-collections', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result" style="color: green;">
+                            <h3>清空完成！</h3>
+                            <p>已删除的收藏记录数：${result.data.deletedCount}</p>
+                            <p>${result.data.message}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div style="color: red;">错误：${result.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div style="color: red;">请求失败：${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

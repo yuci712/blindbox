@@ -1,0 +1,35 @@
+{
+  "name": "blind-box-app",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev": "concurrently \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "build": "npm run build --workspaces",
+    "install-all": "npm install --workspaces",
+    "test": "npm test --workspaces",
+    "lint": "npm lint --workspaces"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "description": "盲盒抽盒机 - Web 开发大作业项目",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/blind-box-app.git"
+  },
+  "keywords": [
+    "blind-box",
+    "react",
+    "midway",
+    "typescript",
+    "web-development"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
